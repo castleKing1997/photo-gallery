@@ -1,0 +1,62 @@
+<!-- 顶部导航和工具栏 -->
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="goEdit()">
+        <ion-icon name="create"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      Detail
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<!-- 主体内容 -->
+<ion-content [fullscreen]="true">
+  <div *ngIf="photo" class="dress-detail">
+    <ion-card>
+      <ion-img [src]="photo.webviewPath">
+      </ion-img>
+    </ion-card>
+    
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Destination</ion-card-subtitle>
+        <ion-card-title>{{photo.name}}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full">
+          <ion-item>
+            <ion-label position="stacked">CreateDate</ion-label>
+            <ion-input readonly>{{photo.createTime}}</ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">UpdateDate</ion-label>
+            <ion-input readonly>{{photo.updateTime}}</ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Count</ion-label>
+            <ion-input readonly>{{photo.count}}</ion-input>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+    <ion-card *ngIf="false">
+      <ion-list lines="full">
+        <ion-list-header lines="full">
+          <ion-label>Debug View</ion-label>
+        </ion-list-header>
+        <ion-item>
+          <ion-label position="stacked">photo.webviewPath</ion-label>
+          <ion-input readonly>{{photo.webviewPath}}</ion-input>
+        </ion-item>
+      </ion-list>
+    </ion-card>
+  </div>
+</ion-content>

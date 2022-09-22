@@ -1,5 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { DressDetailComponent } from '../components/dress-detail/dress-detail.component';
+import { DressEditComponent } from '../components/dress-edit/dress-edit.component';
+
 import { TabsPage } from './tabs.page';
 
 const routes: Routes = [
@@ -8,28 +11,32 @@ const routes: Routes = [
     component: TabsPage,
     children: [
       {
-        path: 'tab1',
-        loadChildren: () => import('../tab1/tab1.module').then(m => m.Tab1PageModule)
-      },
-      {
         path: 'tab2',
         loadChildren: () => import('../tab2/tab2.module').then(m => m.Tab2PageModule)
       },
       {
-        path: 'tab3',
-        loadChildren: () => import('../tab3/tab3.module').then(m => m.Tab3PageModule)
-      },
-      {
         path: '',
-        redirectTo: '/tabs/tab1',
+        redirectTo: '/tabs/tab2',
         pathMatch: 'full'
       }
     ]
   },
   {
     path: '',
-    redirectTo: '/tabs/tab1',
+    redirectTo: '/tabs/tab2',
     pathMatch: 'full'
+  },
+  {
+    path: 'detail/:id',
+    component: DressDetailComponent,
+  },
+  {
+    path: 'edit/:id',
+    component: DressEditComponent,
+  },
+  {
+    path: 'add',
+    component: DressEditComponent,
   }
 ];
 

@@ -1,0 +1,66 @@
+<!-- 顶部导航和工具栏 -->
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      Edit
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+
+<!-- 主体内容 -->
+<ion-content [fullscreen]="true">
+  <div *ngIf="photo" class="dress-edit">
+    <ion-card class="img-card">
+      <ion-img *ngIf="photo.webviewPath" [src]="photo.webviewPath" (click)="handleChooseImage()"></ion-img>
+      <ion-button *ngIf="!photo.webviewPath" (click)="handleChooseImage()">Choose</ion-button>
+    </ion-card>
+    <ion-card>
+      <ion-list lines="full">
+        <ion-list-header lines="full">
+          <ion-label> Input Types </ion-label>
+        </ion-list-header>
+        <ion-item>
+          <ion-label position="stacked">Title</ion-label>
+          <ion-input [(ngModel)]="photo.name" placeholder="Enter Name"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">CreateDate</ion-label>
+          <ion-input readonly (ionFocus)="handlePickDate('CREATE')">{{photo.createTime}}</ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">UpdateDate</ion-label>
+          <ion-input readonly (ionFocus)="handlePickDate('UPDATE')">{{photo.updateTime}}</ion-input>
+        </ion-item>
+        <ion-button expand="block" color="success" class="big-btn" (click)="handleAddOrUpdate()">Confirm</ion-button>
+        <ion-button expand="block" color="light" class="big-btn" (click)="goBack()">Cancel</ion-button>
+      </ion-list>
+    </ion-card>
+    <ion-card *ngIf="debug">
+      <ion-list lines="full">
+        <ion-list-header lines="full">
+          <ion-label>Debug View</ion-label>
+        </ion-list-header>
+        <ion-item>
+          <ion-label position="stacked">photo.webviewPath</ion-label>
+          <ion-input readonly>{{photo.webviewPath}}</ion-input>
+        </ion-item>
+      </ion-list>
+    </ion-card>
+  </div>
+</ion-content>
+<div class="bottom-container">
+  <!-- <ion-datetime  presentation="date" [value]="curDate" [max]="maxDate" #datetime> -->
+  <!-- <ion-datetime  *ngIf="showPicker" presentation="date" [preferWheel]="true" [value]="curDate" #datetime></ion-datetime> -->
+  <ion-datetime  *ngIf="showPicker" presentation="date" [value]="curDate" [min]="minDate" [max]="maxDate" id="datetime" [(ngModel)]="curDate" #datetime>
+    <ion-buttons slot="buttons">
+      <ion-button color="danger" (click)="handleCancelPick()">Cancel</ion-button>
+      <ion-button color="primary" (click)="setCurDate(datetime)">Confirm</ion-button>
+    </ion-buttons>
+  </ion-datetime>
+</div>
