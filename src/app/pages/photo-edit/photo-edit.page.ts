@@ -51,7 +51,7 @@ export class PhotoEditPage implements OnInit {
 
   async getPhoto() {
     const id = this.route.snapshot.paramMap.get('id');
-    this.editMode = id == "0"? 'add' : 'edit';
+    this.editMode = id == "0" ? 'add' : 'edit';
     if (this.editMode == 'edit') {
       this.photo = await this.photoService.getPhotoById(id);
     } else if (this.editMode == 'add') {
@@ -106,13 +106,13 @@ export class PhotoEditPage implements OnInit {
     try {
       if (this.editMode == "edit") {
         this.photoService.updatePicture(this.photo);
-      } else if (this.editMode == "add"){
+      } else if (this.editMode == "add") {
         this.photoService.addNewToGallery(this.photo, this.tempPhoto);
       }
     } catch (e) {
       this.photo.webviewPath = e.toString();
     }
-    this.router.navigate(["/tabs/tab2"])
+    this.router.navigate(["/app/tabs/tab2"])
   }
 
   async handleChooseImage() {
@@ -124,20 +124,24 @@ export class PhotoEditPage implements OnInit {
           role: 'confirm',
           handler: async () => {
             this.tempPhoto = await this.photoService.takePhoto();
-            this.photo.webviewPath = this.tempPhoto.webPath;
+            if (this.tempPhoto != null) {
+              this.photo.webviewPath = this.tempPhoto.webPath;
+            }
           }
         },
         {
           text: 'Album',
           role: 'confirm',
           handler: async () => {
-              const temp = await this.photoService.pickPhoto();
+            const temp = await this.photoService.pickPhoto();
+            if (temp != null) {
               this.photo.webviewPath = temp;
               this.tempPhoto = {
                 webPath: temp,
                 saved: false,
                 format: 'png'
               };
+            }
           }
         },
         {

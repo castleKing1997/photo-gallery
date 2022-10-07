@@ -9,7 +9,7 @@
 
 <ion-content>
   <div *ngIf="username" class="ion-padding-top ion-text-center">
-    <img src="https://ionicframework.com/docs/demos/api/avatar/avatar.svg" alt="avatar">
+    <img [src]="userDetail.avatar" alt="avatar">
     <h3>{{username}}</h3>
 
     <ion-list inset>

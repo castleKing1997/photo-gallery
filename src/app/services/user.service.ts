@@ -16,79 +16,136 @@ export class UserService {
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };
+  token = "";
 
   constructor(
     private http: HttpClient,
-  ) { }
-
-  login(username: string): Promise<any> {
-    return Preferences.set({
-      key: this.HAS_LOGGED_IN,
-      value: "1",
-    }).then(() => {
-      this.setUsername(username);
-      return window.dispatchEvent(new CustomEvent('user:login'));
-    });
+  ) {
   }
 
-  setUsername(username: string): Promise<any> {
-    return Preferences.set({
-      key: 'username',
-      value: username
-    })
+  async login(user: UserOptions): Promise<RestResponse> {
+    console.log("Dsaxa", user);
+    return this.http.post(this.baseUrl + "/login", user,
+      this.httpOptions).toPromise()
+      .then((resp: RestResponse) => {
+        console.log(resp)
+        if (resp.code !== 200) {
+          throw "登录失败";
+        }
+        Preferences.set({
+          key: this.HAS_LOGGED_IN,
+          value: "1"
+        })
+          .then(() => {
+            this.token = resp.data["tokenHead"] + " " + resp.data["token"]
+            Preferences.set({
+              key: 'token',
+              value: this.token
+            })
+          })
+          .then(() => {
+            window.dispatchEvent(new CustomEvent('user:login'));
+          });
+        return resp
+      })
   }
 
-  isLoggedIn(): Promise<boolean> {
+  async updateUserInfo(id: number, params: any): Promise<RestResponse> {
+    return this.http.post(this.baseUrl + "/update?eid=" + id, params,
+      this.httpOptions).toPromise()
+      .then((resp: RestResponse) => {
+        console.log(resp)
+        if (resp.code !== 200) {
+          throw "更新失败";
+        }
+        return resp;
+      })
+  }
+
+  async isLoggedIn(): Promise<boolean> {
     return Preferences.get({
       key: this.HAS_LOGGED_IN
-    }).then((res) => {
-      return res.value === "1";
-    });
+    })
+      .then((res) => {
+        return res.value === "1";
+      })
   }
 
-  logout(): Promise<any> {
+  async logout(): Promise<any> {
     return Preferences.remove({
       key: this.HAS_LOGGED_IN
-    }).then(() => {
-      return Preferences.remove({
-        key: 'username'
+    })
+      .then(() => {
+        return Preferences.remove({
+          key: 'username'
+        });
+      })
+      .then(() => {
+        return Preferences.remove({
+          key: 'token'
+        });
+      })
+      .then(() => {
+        window.dispatchEvent(new CustomEvent('user:logout'));
       });
-    }).then(() => {
-      window.dispatchEvent(new CustomEvent('user:logout'));
-    });
   }
 
-  signup(user: UserOptions) {
+  async signup(user: UserOptions): Promise<RestResponse> {
     return this.http.post(this.baseUrl + "/create", {
       membercode: user.username,
+      membername: user.username,
       password: user.password
-    }, this.httpOptions)
-    .pipe((resp) => {
-      // if (resp.code !== 200) {
-      //   return resp;
-      // }
-      Preferences.set({
-        key: this.HAS_LOGGED_IN,
-        value: "1"
-      }).then(() => {
-        this.setUsername(user.username);
-        window.dispatchEvent(new CustomEvent('user:signup'));
+    }, this.httpOptions).toPromise()
+      .then((resp: RestResponse) => {
+        console.log(resp)
+        if (resp.code !== 200) {
+          throw "注册失败";
+        }
+        Preferences.set({
+          key: this.HAS_LOGGED_IN,
+          value: "1"
+        })
+          .then(() => {
+            window.dispatchEvent(new CustomEvent('user:signup'));
+          })
+          .then(() => {
+            this.login(user);
+          });
+        return resp
       });
-      return resp;
-    })
   }
 
-  getUsername(): Promise<string> {
-    return Preferences.get({
-      key: 'username'}
-      ).then((res) => {
-      return res.value;
-    });
+
+  async getUserInfo(): Promise<RestResponse> {
+    return this.http.get(this.baseUrl + "/info", this.httpOptions).toPromise()
+      .then((resp: RestResponse) => {
+        return resp;
+      })
+  }
+
+  async setToken(): Promise<void> {
+    return Preferences.get({ key: 'token' })
+      .then(res => {
+        this.token = res.value;
+      })
+  }
+
+  getToken(): string {
+    return this.token
   }
 }
 
 export interface UserOptions {
   username: string;
   password: string;
+}
+
+export interface UserDetail {
+  id: number;
+  usercode: string;
+  username: string;
+  email: string;
+  avatar: string;
+  gender: string;
 }
 

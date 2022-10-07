@@ -17,21 +17,21 @@ const routes: Routes = [
           },
           {
             path: 'photo-detail/:id',
-            loadChildren: () => import('../photo-detail/photo-detail.module').then( m => m.PhotoDetailPageModule)
+            loadChildren: () => import('../photo-detail/photo-detail.module').then(m => m.PhotoDetailPageModule)
           },
           {
             path: 'photo-edit/:id',
-            loadChildren: () => import('../photo-edit/photo-edit.module').then( m => m.PhotoEditPageModule)
+            loadChildren: () => import('../photo-edit/photo-edit.module').then(m => m.PhotoEditPageModule)
           },
           {
             path: 'photo-add',
-            loadChildren: () => import('../photo-edit/photo-edit.module').then( m => m.PhotoEditPageModule)
+            loadChildren: () => import('../photo-edit/photo-edit.module').then(m => m.PhotoEditPageModule)
           },
-        ], 
+        ],
       },
       {
         path: '',
-        redirectTo: '/tabs/tab2',
+        redirectTo: '/app/tabs/tab2',
         pathMatch: 'full'
       }
     ]
@@ -46,4 +46,4 @@ const routes: Routes = [
 @NgModule({
   imports: [RouterModule.forChild(routes)],
 })
-export class TabsPageRoutingModule {}
+export class TabsPageRoutingModule { }

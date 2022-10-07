@@ -33,6 +33,25 @@
           </ion-menu-toggle>
 
           <ion-menu-toggle autoHide="false">
+            <ion-item button (click)="upload()" detail="false">
+              <ion-icon slot="start" name="cloud-upload"></ion-icon>
+              <ion-label>
+                Upload
+              </ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+
+
+          <ion-menu-toggle autoHide="false">
+            <ion-item button (click)="logout()" detail="false">
+              <ion-icon slot="start" name="download"></ion-icon>
+              <ion-label>
+                Download
+              </ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+
+          <ion-menu-toggle autoHide="false">
             <ion-item button (click)="logout()" detail="false">
               <ion-icon slot="start" name="log-out"></ion-icon>
               <ion-label>

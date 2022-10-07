@@ -5,6 +5,9 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Preferences } from '@capacitor/preferences';
 import { Platform } from '@ionic/angular';
 import { ImagePicker } from '@awesome-cordova-plugins/image-picker/ngx';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
+import { RestResponse } from '../interfaces/rest-response';
 
 @Injectable({
   providedIn: 'root'
@@ -12,25 +15,31 @@ import { ImagePicker } from '@awesome-cordova-plugins/image-picker/ngx';
 export class PhotoService {
 
   public photos: UserPhoto[] = [];
+  httpOptions = {
+    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+  };
+  baseUrl = environment.baseUrl + "/minio";
   private KEY_PHOTO_STORAGE: string = 'PHOTO';
 
   constructor(
     private platform: Platform,
     private imagePicker: ImagePicker,
-    ) { 
+    private http: HttpClient,
+  ) {
     this.loadSaved()
   }
 
   public async addNewToGallery(userPhoto: UserPhoto, photo: Photo) {
     const savedImageFile = await this.addPicture(userPhoto, photo);
-    this.photos.push(savedImageFile); 
+    this.photos.push(savedImageFile);
     Preferences.set({
-      key: this.KEY_PHOTO_STORAGE+"."+savedImageFile.code,
+      key: this.KEY_PHOTO_STORAGE + "." + savedImageFile.code,
       value: JSON.stringify(savedImageFile),
     });
   }
 
   public async takePhoto() {
+    try {
       // Take a photo
       const capturedPhoto = await Camera.getPhoto({
         resultType: CameraResultType.Uri,
@@ -38,33 +47,40 @@ export class PhotoService {
         quality: 100
       });
       return capturedPhoto;
+    } catch (e) {
+      return null;
+    }
   }
 
   public async pickPhoto() {
-    const pickedPhoto = await this.imagePicker.getPictures({
-      maximumImagesCount: 1,
-      quality: 100,
-    })
-    // Read each saved photo's data from the Filesystem
-    const readFile = await Filesystem.readFile({
-      path: pickedPhoto[0],
-    });
-    // Web platform only: Load the photo as base64 data
-    const webviewPath = `data:image/jpeg;base64,${readFile.data}`;
-    return webviewPath;
+    try {
+      const pickedPhoto = await this.imagePicker.getPictures({
+        maximumImagesCount: 1,
+        quality: 100,
+      })
+      // Read each saved photo's data from the Filesystem
+      const readFile = await Filesystem.readFile({
+        path: pickedPhoto[0],
+      });
+      // Web platform only: Load the photo as base64 data
+      const webviewPath = `data:image/jpeg;base64,${readFile.data}`;
+      return webviewPath;
+    } catch (e) {
+      return null;
+    }
   }
 
   public async loadSaved() {
     // Retrieve cached photo array data
     const allKeys = (await Preferences.keys()).keys;
-    const photoKeys = allKeys.filter(item=>item.match(this.KEY_PHOTO_STORAGE))
+    const photoKeys = allKeys.filter(item => item.match(this.KEY_PHOTO_STORAGE))
     this.photos = [];
     for (let index = 0; index < photoKeys.length; index++) {
       const keyTemp = photoKeys[index];
-      const item = await Preferences.get({key : keyTemp});
-      this.photos.push(JSON.parse(item.value)); 
+      const item = await Preferences.get({ key: keyTemp });
+      this.photos.push(JSON.parse(item.value));
     }
-  
+
     // Easiest way to detect when running on the web:
     // “when the platform is NOT hybrid, do this”
     if (!this.platform.is('hybrid')) {
@@ -72,10 +88,10 @@ export class PhotoService {
       for (let photo of this.photos) {
         // Read each saved photo's data from the Filesystem
         const readFile = await Filesystem.readFile({
-            path: photo.filepath,
-            directory: Directory.Data
+          path: photo.filepath,
+          directory: Directory.Data
         });
-  
+
         // Web platform only: Load the photo as base64 data
         photo.webviewPath = `data:image/jpeg;base64,${readFile.data}`;
       }
@@ -83,20 +99,20 @@ export class PhotoService {
   }
 
   public async getPhotoById(id: string) {
-    const item = await Preferences.get({key : this.KEY_PHOTO_STORAGE+"."+id});
+    const item = await Preferences.get({ key: this.KEY_PHOTO_STORAGE + "." + id });
     return JSON.parse(item.value);
   }
 
   public async deletePicture(photo: UserPhoto) {
     // Update photos array cache by overwriting the existing photo array
     Preferences.remove({
-      key: this.KEY_PHOTO_STORAGE+"."+photo.code,
+      key: this.KEY_PHOTO_STORAGE + "." + photo.code,
     });
-  
+
     // delete photo file from filesystem
     const filename = photo.filepath
-                        .substr(photo.filepath.lastIndexOf('/') + 1);
-  
+      .substr(photo.filepath.lastIndexOf('/') + 1);
+
     await Filesystem.deleteFile({
       path: filename,
       directory: Directory.Data
@@ -109,13 +125,13 @@ export class PhotoService {
     const oldPhoto = await this.getPhotoById(photo.code);
     // Update photos array cache by overwriting the existing photo array
     Preferences.set({
-      key: this.KEY_PHOTO_STORAGE+"."+photo.code,
+      key: this.KEY_PHOTO_STORAGE + "." + photo.code,
       value: JSON.stringify(photo)
     });
     // delete old photo file if changed
     if (oldPhoto.filepath != photo.filepath) {
       const filename = oldPhoto.filepath
-      .substr(oldPhoto.filepath.lastIndexOf('/') + 1);
+        .substr(oldPhoto.filepath.lastIndexOf('/') + 1);
       await Filesystem.deleteFile({
         path: filename,
         directory: Directory.Data
@@ -134,7 +150,7 @@ export class PhotoService {
     } else {
       base64Data = await this.readAsBase64(photo);
     }
-    
+
     // Write the file to the data directory
     const fileName = new Date().getTime() + '.jpeg';
     const savedFile = await Filesystem.writeFile({
@@ -214,30 +230,30 @@ export class PhotoService {
     }
   }
 
-  private async readAsBase64(photo: Photo) {
+  async readAsBase64(photo: Photo) {
     // "hybrid" will detect Cordova or Capacitor
     if (this.platform.is('hybrid')) {
       // Read the file into base64 format
       const file = await Filesystem.readFile({
         path: photo.path
       });
-  
+
       return file.data;
     }
     else {
       // Fetch the photo, read as a blob, then convert to base64 format
       const response = await fetch(photo.webPath);
       const blob = await response.blob();
-  
+
       return await this.convertBlobToBase64(blob) as string;
     }
   }
-  
+
   private convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = reject;
     reader.onload = () => {
-        resolve(reader.result);
+      resolve(reader.result);
     };
     reader.readAsDataURL(blob);
   });
@@ -256,6 +272,18 @@ export class PhotoService {
     }
     s[8] = s[13] = s[18] = s[23] = '-';
     return s.join('');
+  }
+
+  async uploadPhotoToMinio(params: any): Promise<any> {
+    return this.http.post(this.baseUrl + "/upload", params,
+      this.httpOptions).toPromise()
+      .then((res: RestResponse) => {
+        console.log(res);
+        if (res.code != 200) {
+          throw "上传失败";
+        }
+        return res.data;
+      });
   }
 }
 

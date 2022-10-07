@@ -16,8 +16,8 @@ import { ErrorHandlerInterceptor } from './interceptors/ErrorHandlerInterceptor'
 @NgModule({
   declarations: [AppComponent],
   imports: [
-    BrowserModule, 
-    IonicModule.forRoot(), 
+    BrowserModule,
+    IonicModule.forRoot(),
     AppRoutingModule,
     FormsModule,
     HttpClientModule,
@@ -30,17 +30,17 @@ import { ErrorHandlerInterceptor } from './interceptors/ErrorHandlerInterceptor'
       useClass: HeaderInterceptor,
       multi: true
     },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: ResponseHandlerInterceptor,
-      multi: true
-    },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: ErrorHandlerInterceptor,
-      multi: true
-    }
+    // {
+    //   provide: HTTP_INTERCEPTORS,
+    //   useClass: ResponseHandlerInterceptor,
+    //   multi: true
+    // },
+    // {
+    //   provide: HTTP_INTERCEPTORS,
+    //   useClass: ErrorHandlerInterceptor,
+    //   multi: true
+    // }
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }
